@@ -176,13 +176,23 @@ function dueLabelLong(item) {
 }
 
 /* ── 정렬 / 필터 ──────────────────────────────── */
+/* 고정 → 남은 할일(임박한 마감 먼저) → 정보 카드 → 끝난 할일 순 */
+function itemRank(it) {
+  if (it.pinned) return 0;
+  if (it.cat !== 'todo') return 2;
+  return it.done ? 3 : 1;
+}
+
 function sortItems(items) {
   return items.slice().sort((a, b) => {
-    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-    if (a.cat === 'todo' && b.cat === 'todo' && a.done !== b.done) return a.done ? 1 : -1;
-    const ad = a.dueAt || Infinity;
-    const bd = b.dueAt || Infinity;
-    if (a.cat === 'todo' && b.cat === 'todo' && ad !== bd) return ad - bd;
+    const ra = itemRank(a);
+    const rb = itemRank(b);
+    if (ra !== rb) return ra - rb;
+    if (ra === 1) {
+      const ad = a.dueAt || Infinity;
+      const bd = b.dueAt || Infinity;
+      if (ad !== bd) return ad - bd;
+    }
     return (b.updatedAt || 0) - (a.updatedAt || 0);
   });
 }
