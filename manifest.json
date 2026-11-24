@@ -1,0 +1,30 @@
+{
+  "name": "나만의 알림장",
+  "short_name": "알림장",
+  "description": "할일과 생활 정보를 한곳에 모아 두는 나만의 알림장",
+  "lang": "ko",
+  "dir": "ltr",
+  "id": "/alrimjang/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait",
+  "background_color": "#f4f3ee",
+  "theme_color": "#2f6b52",
+  "categories": ["productivity", "lifestyle", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "할일 추가",
+      "short_name": "할일",
+      "url": "./?cat=todo",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

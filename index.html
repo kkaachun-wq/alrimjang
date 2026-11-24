@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>나만의 알림장</title>
+<meta name="description" content="할일과 생활 정보를 한 곳에 모아 두는 나만의 알림장">
+<meta name="theme-color" content="#2f6b52">
+<meta name="color-scheme" content="light">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-64.png" sizes="64x64" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="알림장">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="head" id="head">
+  <header class="topbar">
+    <div class="brand">
+      <img class="brand-icon" src="icons/icon-192.png" alt="" width="38" height="38">
+      <div class="brand-text">
+        <h1>나만의 알림장</h1>
+        <p class="brand-sub" id="todayLabel"></p>
+      </div>
+    </div>
+    <button class="icon-btn" id="btnMenu" type="button" aria-label="설정과 백업 열기" aria-haspopup="dialog">
+      <span aria-hidden="true">☰</span>
+    </button>
+  </header>
+
+  <div class="searchbar">
+    <span class="search-ico" aria-hidden="true">⌕</span>
+    <input id="searchInput" type="search" inputmode="search" placeholder="제목·내용·태그 검색" autocomplete="off" aria-label="검색">
+    <button id="btnClearSearch" class="clear-btn" type="button" aria-label="검색 지우기" hidden>✕</button>
+  </div>
+
+  <nav class="chips" id="chips" aria-label="항목 선택"></nav>
+</div>
+
+<main class="list" id="list" aria-live="polite"></main>
+
+<div class="empty" id="empty" hidden>
+  <div class="empty-ico" aria-hidden="true">🗒️</div>
+  <p class="empty-title" id="emptyTitle">아직 적어 둔 것이 없습니다</p>
+  <p class="empty-desc" id="emptyDesc">아래 ＋ 버튼을 눌러 첫 번째 항목을 추가해 보세요.</p>
+</div>
+
+<button class="fab" id="fab" type="button" aria-label="새 항목 추가">
+  <span aria-hidden="true">＋</span>
+</button>
+
+<div class="backdrop" id="backdrop" hidden></div>
+
+<!-- 항목 추가·수정 -->
+<section class="sheet" id="editSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheet-head">
+    <h2 id="sheetTitle">새로 추가</h2>
+    <button class="icon-btn" id="btnCloseSheet" type="button" aria-label="닫기">✕</button>
+  </div>
+  <form id="itemForm" class="sheet-body" novalidate>
+    <input type="hidden" id="f_id">
+
+    <div class="field">
+      <span class="label">항목</span>
+      <div class="cat-picker" id="catPicker" role="radiogroup" aria-label="항목 선택"></div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="f_title">제목</label>
+      <input id="f_title" class="input" type="text" maxlength="80" placeholder="예: 병원 예약 시간 확인" required>
+    </div>
+
+    <div class="field">
+      <label class="label" for="f_body">내용·메모</label>
+      <textarea id="f_body" class="input textarea" rows="4" maxlength="4000" placeholder="내용을 적어 두세요"></textarea>
+    </div>
+
+    <div class="field">
+      <label class="label" for="f_url">링크 <span class="opt">(선택)</span></label>
+      <input id="f_url" class="input" type="url" inputmode="url" placeholder="https://..." autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label class="label" for="f_tags">태그 <span class="opt">(쉼표로 구분)</span></label>
+      <input id="f_tags" class="input" type="text" placeholder="예: 병원, 12월" autocomplete="off">
+    </div>
+
+    <div class="field todo-only" id="dueField">
+      <span class="label">마감</span>
+      <div class="due-row">
+        <input id="f_dueDate" class="input" type="date" aria-label="마감 날짜">
+        <input id="f_dueTime" class="input" type="time" aria-label="마감 시간">
+      </div>
+      <div class="due-quick" id="dueQuick">
+        <button type="button" data-quick="today">오늘</button>
+        <button type="button" data-quick="tomorrow">내일</button>
+        <button type="button" data-quick="week">일주일 뒤</button>
+        <button type="button" data-quick="clear">지우기</button>
+      </div>
+      <p class="hint" id="notifyHint"></p>
+      <div class="cal-actions" id="calActions" hidden>
+        <button type="button" class="btn-soft" id="btnIcs">📅 폰 캘린더 알림 파일(.ics)</button>
+        <a class="btn-soft" id="linkGcal" href="#" target="_blank" rel="noopener">🗓️ 구글 캘린더에 추가</a>
+        <p class="hint">캘린더에 등록해 두면 앱을 닫아도 폰이 직접 알려 줍니다.</p>
+      </div>
+    </div>
+
+    <label class="switch-row" for="f_pinned">
+      <span>📌 맨 위에 고정</span>
+      <input type="checkbox" id="f_pinned">
+      <span class="switch" aria-hidden="true"></span>
+    </label>
+
+    <div class="sheet-actions">
+      <button type="button" class="btn-ghost danger-text" id="btnDelete" hidden>삭제</button>
+      <button type="submit" class="btn-primary" id="btnSave">저장</button>
+    </div>
+  </form>
+</section>
+
+<!-- 설정 -->
+<section class="sheet" id="menuSheet" role="dialog" aria-modal="true" aria-labelledby="menuTitle" hidden>
+  <div class="sheet-head">
+    <h2 id="menuTitle">설정</h2>
+    <button class="icon-btn" id="btnCloseMenu" type="button" aria-label="닫기">✕</button>
+  </div>
+  <div class="sheet-body">
+
+    <div class="menu-group">
+      <h3>알림</h3>
+      <p class="hint">앱을 열어 둔 동안 마감 시간에 브라우저 알림이 옵니다. 폰이 잠겨 있거나 앱을 닫으면 오지 않으니, 꼭 챙겨야 할 일은 항목을 열어 <b>캘린더 알림 파일</b>로 등록해 두세요.</p>
+      <button class="btn-soft" id="btnNotify" type="button">🔔 브라우저 알림 켜기</button>
+      <div class="inline-field">
+        <label for="remindMin">알림 시점</label>
+        <select id="remindMin" class="input compact">
+          <option value="0">마감 시간에</option>
+          <option value="30">30분 전</option>
+          <option value="60">1시간 전</option>
+          <option value="180">3시간 전</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="menu-group">
+      <h3>백업</h3>
+      <p class="hint">모든 내용은 이 폰의 브라우저에만 저장됩니다. 폰을 바꾸거나 브라우저 기록을 지우기 전에 백업 파일을 받아 두세요.</p>
+      <button class="btn-soft" id="btnExport" type="button">⬇️ JSON 백업 내보내기</button>
+      <label class="btn-soft" for="importFile">⬆️ 백업 파일 불러오기</label>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+    </div>
+
+    <div class="menu-group">
+      <h3>홈 화면에 추가</h3>
+      <ol class="steps">
+        <li>안드로이드 <b>크롬</b>에서 이 페이지를 엽니다.</li>
+        <li>오른쪽 위 <b>⋮</b> 메뉴를 누릅니다.</li>
+        <li><b>홈 화면에 추가</b>(또는 <b>앱 설치</b>)를 고릅니다.</li>
+        <li>홈 화면의 <b>알림장</b> 아이콘을 누르면 앱처럼 열립니다.</li>
+      </ol>
+      <button class="btn-soft" id="btnInstall" type="button" hidden>📲 앱으로 설치</button>
+    </div>
+
+    <div class="menu-group">
+      <h3>정보</h3>
+      <p class="hint">기록 <b id="statCount">0</b>개 · 저장 위치: 이 기기 브라우저(localStorage). 서버로 보내지 않습니다.</p>
+    </div>
+
+  </div>
+</section>
+
+<div class="dialog" id="confirm" role="alertdialog" aria-modal="true" aria-labelledby="confirmText" hidden>
+  <div class="dialog-box">
+    <p id="confirmText">삭제할까요?</p>
+    <div class="dialog-actions">
+      <button class="btn-ghost" id="confirmNo" type="button">취소</button>
+      <button class="btn-primary danger" id="confirmYes" type="button">삭제</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
