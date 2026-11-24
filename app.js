@@ -918,8 +918,19 @@ function setupInstall() {
 }
 
 /* ── 시작 ─────────────────────────────────────── */
+function applyQuery() {
+  try {
+    const p = new URLSearchParams(location.search).get('cat');
+    if (p && CAT_BY_ID[p]) {
+      ui.cat = p;
+      ui.scrollChips = true;
+    }
+  } catch (e) { /* 무시 */ }
+}
+
 function init() {
   load();
+  applyQuery();
   bind();
   render();
   setupInstall();
